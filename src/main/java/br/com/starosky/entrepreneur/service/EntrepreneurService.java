@@ -107,4 +107,20 @@ public class EntrepreneurService {
         Entrepreneur updated = entrepreneurRepository.save(entrepreneur);
         return EntrepreneurResponse.fromEntity(updated);
     }
+
+    /**
+     * Realiza exclusão lógica (soft delete) de um empreendedor.
+     * Altera o status para INACTIVE.
+     *
+     * @param id ID do empreendedor a ser excluído
+     * @throws ValidationException se o empreendedor não for encontrado
+     */
+    @Transactional
+    public void delete(Long id) {
+        Entrepreneur entrepreneur = entrepreneurRepository.findById(id)
+                .orElseThrow(() -> new ValidationException("Empreendedor não encontrado"));
+
+        entrepreneur.setStatus(Status.INACTIVE);
+        entrepreneurRepository.save(entrepreneur);
+    }
 }
