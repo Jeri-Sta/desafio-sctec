@@ -11,13 +11,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -115,6 +122,87 @@ class EntrepreneurControllerTest {
     @Test
     void createMethod_ShouldReturnResponseEntity() throws NoSuchMethodException {
         var method = EntrepreneurController.class.getDeclaredMethod("create", EntrepreneurRequest.class);
+        assertEquals(ResponseEntity.class, method.getReturnType());
+    }
+
+    @Test
+    void findById_WhenExists_ShouldReturn200Ok() {
+        Long id = 1L;
+        when(entrepreneurService.findById(id)).thenReturn(Optional.of(validResponse));
+
+        ResponseEntity<EntrepreneurResponse> response = entrepreneurController.findById(id);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1L, response.getBody().getId());
+        assertEquals("Tech Solutions", response.getBody().getEnterpriseName());
+    }
+
+    @Test
+    void findById_WhenNotExists_ShouldReturn404NotFound() {
+        Long id = 999L;
+        when(entrepreneurService.findById(id)).thenReturn(Optional.empty());
+
+        ResponseEntity<EntrepreneurResponse> response = entrepreneurController.findById(id);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
+    }
+
+    @Test
+    void findByIdMethod_ShouldExist() throws NoSuchMethodException {
+        var method = EntrepreneurController.class.getDeclaredMethod("findById", Long.class);
+        assertNotNull(method);
+        assertEquals(ResponseEntity.class, method.getReturnType());
+    }
+
+    @Test
+    void findAll_ShouldReturn200Ok() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<EntrepreneurResponse> page = new PageImpl<>(
+                Arrays.asList(validResponse),
+                pageable,
+                1
+        );
+        when(entrepreneurService.findAll(pageable)).thenReturn(page);
+
+        ResponseEntity<Page<EntrepreneurResponse>> response = entrepreneurController.findAll(pageable);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().getTotalElements());
+    }
+
+    @Test
+    void findAll_WithEmptyList_ShouldReturnEmptyPage() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<EntrepreneurResponse> emptyPage = new PageImpl<>(
+                Arrays.asList(),
+                pageable,
+                0
+        );
+        when(entrepreneurService.findAll(pageable)).thenReturn(emptyPage);
+
+        ResponseEntity<Page<EntrepreneurResponse>> response = entrepreneurController.findAll(pageable);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(0, response.getBody().getTotalElements());
+    }
+
+    @Test
+    void findAllMethod_ShouldExist() throws NoSuchMethodException {
+        var method = EntrepreneurController.class.getDeclaredMethod("findAll", Pageable.class);
+        assertNotNull(method);
+    }
+
+    @Test
+    void findAllMethod_ShouldReturnPageResponseEntity() throws NoSuchMethodException {
+        var method = EntrepreneurController.class.getDeclaredMethod("findAll", Pageable.class);
         assertEquals(ResponseEntity.class, method.getReturnType());
     }
 }

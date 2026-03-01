@@ -7,8 +7,12 @@ import br.com.starosky.entrepreneur.enums.Status;
 import br.com.starosky.entrepreneur.exception.ValidationException;
 import br.com.starosky.entrepreneur.repository.EntrepreneurRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +42,30 @@ public class EntrepreneurService {
 
         Entrepreneur saved = entrepreneurRepository.save(entrepreneur);
         return EntrepreneurResponse.fromEntity(saved);
+    }
+
+    /**
+     * Busca um empreendedor pelo ID.
+     *
+     * @param id ID do empreendedor
+     * @return dados do empreendedor encontrado
+     */
+    @Transactional(readOnly = true)
+    public Optional<EntrepreneurResponse> findById(Long id) {
+        return entrepreneurRepository.findById(id)
+                .map(EntrepreneurResponse::fromEntity);
+    }
+
+    /**
+     * Lista todos os empreendedores com paginação.
+     *
+     * @param pageable parâmetros de paginação
+     * @return página de empreendedores
+     */
+    @Transactional(readOnly = true)
+    public Page<EntrepreneurResponse> findAll(Pageable pageable) {
+        return entrepreneurRepository.findAll(pageable)
+                .map(EntrepreneurResponse::fromEntity);
     }
 
     /**

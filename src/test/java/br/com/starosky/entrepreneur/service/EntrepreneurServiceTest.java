@@ -13,12 +13,21 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -204,5 +213,62 @@ class EntrepreneurServiceTest {
 
         assertNotNull(response);
         assertEquals(Status.INACTIVE, response.getStatus());
+    }
+
+    @Test
+    void findById_WhenExists_ShouldReturnEntrepreneur() {
+        Long id = 1L;
+        Entrepreneur entrepreneur = Entrepreneur.builder()
+                .id(id)
+                .enterpriseName("Tech Solutions")
+                .entrepreneurName("John Doe")
+                .city("Florianopolis")
+                .operatingSegment(OperatingSegment.TECHNOLOGY)
+                .contact("john@example.com")
+                .status(Status.ACTIVE)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        when(entrepreneurRepository.findById(id)).thenReturn(Optional.of(entrepreneur));
+
+        Optional<EntrepreneurResponse> result = entrepreneurService.findById(id);
+
+        assertTrue(result.isPresent());
+        assertEquals(id, result.get().getId());
+        assertEquals("Tech Solutions", result.get().getEnterpriseName());
+    }
+
+    @Test
+    void findById_WhenNotExists_ShouldReturnEmpty() {
+        Long id = 999L;
+        when(entrepreneurRepository.findById(id)).thenReturn(Optional.empty());
+
+        Optional<EntrepreneurResponse> result = entrepreneurService.findById(id);
+
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    void findAll_ShouldReturnPageOfEntrepreneurs() {
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Entrepreneur> entrepreneurs = Arrays.asList(
+                Entrepreneur.builder().id(1L).enterpriseName("Company 1").entrepreneurName("Person 1")
+                        .city("City 1").operatingSegment(OperatingSegment.TECHNOLOGY).contact("email1@test.com")
+                        .status(Status.ACTIVE).createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now()).build(),
+                Entrepreneur.builder().id(2L).enterpriseName("Company 2").entrepreneurName("Person 2")
+                        .city("City 2").operatingSegment(OperatingSegment.COMMERCE).contact("email2@test.com")
+                        .status(Status.ACTIVE).createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now()).build()
+        );
+        Page<Entrepreneur> page = new PageImpl<>(entrepreneurs, pageable, entrepreneurs.size());
+
+        when(entrepreneurRepository.findAll(pageable)).thenReturn(page);
+
+        Page<EntrepreneurResponse> result = entrepreneurService.findAll(pageable);
+
+        assertNotNull(result);
+        assertEquals(2, result.getContent().size());
+        assertEquals(1L, result.getContent().get(0).getId());
+        assertEquals(2L, result.getContent().get(1).getId());
     }
 }
