@@ -475,4 +475,40 @@ class EntrepreneurServiceTest {
         assertNotNull(response);
         assertEquals(Status.ACTIVE, response.getStatus());
     }
+
+    @Test
+    void delete_WithValidId_ShouldChangeStatusToInactive() {
+        Long id = 1L;
+        Entrepreneur existingEntrepreneur = Entrepreneur.builder()
+                .id(id)
+                .enterpriseName("Company")
+                .entrepreneurName("Name")
+                .city("Florianopolis")
+                .operatingSegment(OperatingSegment.TECHNOLOGY)
+                .contact("email@example.com")
+                .status(Status.ACTIVE)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        when(entrepreneurRepository.findById(id)).thenReturn(Optional.of(existingEntrepreneur));
+        when(entrepreneurRepository.save(any(Entrepreneur.class))).thenReturn(existingEntrepreneur);
+
+        entrepreneurService.delete(id);
+
+        verify(entrepreneurRepository, times(1)).save(any(Entrepreneur.class));
+    }
+
+    @Test
+    void delete_WhenNotExists_ShouldThrowValidationException() {
+        Long id = 999L;
+        when(entrepreneurRepository.findById(id)).thenReturn(Optional.empty());
+
+        ValidationException exception = assertThrows(ValidationException.class, () -> {
+            entrepreneurService.delete(id);
+        });
+
+        assertEquals("Empreendedor não encontrado", exception.getMessage());
+        verify(entrepreneurRepository, never()).save(any(Entrepreneur.class));
+    }
 }

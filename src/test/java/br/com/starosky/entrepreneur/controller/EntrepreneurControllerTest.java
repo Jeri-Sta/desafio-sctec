@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -258,6 +259,47 @@ class EntrepreneurControllerTest {
     @Test
     void updateMethod_ShouldHavePathVariable() throws NoSuchMethodException {
         var method = EntrepreneurController.class.getDeclaredMethod("update", Long.class, EntrepreneurRequest.class);
+        var parameter = method.getParameters()[0];
+        assertNotNull(parameter.getAnnotation(org.springframework.web.bind.annotation.PathVariable.class));
+    }
+
+    @Test
+    void delete_WithValidId_ShouldReturn204NoContent() {
+        Long id = 1L;
+        doNothing().when(entrepreneurService).delete(id);
+
+        ResponseEntity<Void> response = entrepreneurController.delete(id);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    void delete_ShouldCallServiceWithCorrectId() {
+        Long id = 1L;
+        doNothing().when(entrepreneurService).delete(id);
+
+        entrepreneurController.delete(id);
+
+        assertNotNull(entrepreneurService);
+    }
+
+    @Test
+    void deleteMethod_ShouldExist() throws NoSuchMethodException {
+        var method = EntrepreneurController.class.getDeclaredMethod("delete", Long.class);
+        assertNotNull(method);
+        assertEquals(ResponseEntity.class, method.getReturnType());
+    }
+
+    @Test
+    void deleteMethod_ShouldBeAnnotatedWithDeleteMapping() throws NoSuchMethodException {
+        assertNotNull(EntrepreneurController.class.getDeclaredMethod("delete", Long.class)
+                .getAnnotation(org.springframework.web.bind.annotation.DeleteMapping.class));
+    }
+
+    @Test
+    void deleteMethod_ShouldHavePathVariable() throws NoSuchMethodException {
+        var method = EntrepreneurController.class.getDeclaredMethod("delete", Long.class);
         var parameter = method.getParameters()[0];
         assertNotNull(parameter.getAnnotation(org.springframework.web.bind.annotation.PathVariable.class));
     }

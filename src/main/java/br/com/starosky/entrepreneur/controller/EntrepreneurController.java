@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -76,5 +77,17 @@ public class EntrepreneurController {
             @Valid @RequestBody EntrepreneurRequest request) {
         EntrepreneurResponse response = entrepreneurService.update(id, request);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Realiza exclusão lógica (soft delete) de um empreendedor.
+     *
+     * @param id ID do empreendedor
+     * @return Status 204 (No Content)
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        entrepreneurService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
