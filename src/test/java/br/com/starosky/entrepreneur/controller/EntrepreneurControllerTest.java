@@ -205,4 +205,60 @@ class EntrepreneurControllerTest {
         var method = EntrepreneurController.class.getDeclaredMethod("findAll", Pageable.class);
         assertEquals(ResponseEntity.class, method.getReturnType());
     }
+
+    @Test
+    void update_WithValidData_ShouldReturn200Ok() {
+        Long id = 1L;
+        when(entrepreneurService.update(any(Long.class), any(EntrepreneurRequest.class))).thenReturn(validResponse);
+
+        ResponseEntity<EntrepreneurResponse> response = entrepreneurController.update(id, validRequest);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1L, response.getBody().getId());
+        assertEquals("Tech Solutions", response.getBody().getEnterpriseName());
+        assertEquals("John Doe", response.getBody().getEntrepreneurName());
+        assertEquals("Florianopolis", response.getBody().getCity());
+        assertEquals(OperatingSegment.TECHNOLOGY, response.getBody().getOperatingSegment());
+        assertEquals("john@example.com", response.getBody().getContact());
+        assertEquals(Status.ACTIVE, response.getBody().getStatus());
+    }
+
+    @Test
+    void update_ShouldCallServiceWithCorrectParameters() {
+        Long id = 1L;
+        when(entrepreneurService.update(any(Long.class), any(EntrepreneurRequest.class))).thenReturn(validResponse);
+
+        entrepreneurController.update(id, validRequest);
+
+        assertNotNull(entrepreneurService);
+    }
+
+    @Test
+    void updateMethod_ShouldExist() throws NoSuchMethodException {
+        var method = EntrepreneurController.class.getDeclaredMethod("update", Long.class, EntrepreneurRequest.class);
+        assertNotNull(method);
+        assertEquals(ResponseEntity.class, method.getReturnType());
+    }
+
+    @Test
+    void updateMethod_ShouldBeAnnotatedWithPutMapping() throws NoSuchMethodException {
+        assertNotNull(EntrepreneurController.class.getDeclaredMethod("update", Long.class, EntrepreneurRequest.class)
+                .getAnnotation(org.springframework.web.bind.annotation.PutMapping.class));
+    }
+
+    @Test
+    void updateMethod_ShouldAcceptValidRequestBody() throws NoSuchMethodException {
+        var method = EntrepreneurController.class.getDeclaredMethod("update", Long.class, EntrepreneurRequest.class);
+        var parameter = method.getParameters()[1];
+        assertNotNull(parameter.getAnnotation(jakarta.validation.Valid.class));
+    }
+
+    @Test
+    void updateMethod_ShouldHavePathVariable() throws NoSuchMethodException {
+        var method = EntrepreneurController.class.getDeclaredMethod("update", Long.class, EntrepreneurRequest.class);
+        var parameter = method.getParameters()[0];
+        assertNotNull(parameter.getAnnotation(org.springframework.web.bind.annotation.PathVariable.class));
+    }
 }

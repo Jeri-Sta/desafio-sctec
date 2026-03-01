@@ -271,4 +271,208 @@ class EntrepreneurServiceTest {
         assertEquals(1L, result.getContent().get(0).getId());
         assertEquals(2L, result.getContent().get(1).getId());
     }
+
+    @Test
+    void update_WithValidData_ShouldReturnUpdatedEntrepreneur() {
+        Long id = 1L;
+        Entrepreneur existingEntrepreneur = Entrepreneur.builder()
+                .id(id)
+                .enterpriseName("Old Company")
+                .entrepreneurName("Old Name")
+                .city("Florianopolis")
+                .operatingSegment(OperatingSegment.TECHNOLOGY)
+                .contact("old@example.com")
+                .status(Status.ACTIVE)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        when(entrepreneurRepository.findById(id)).thenReturn(Optional.of(existingEntrepreneur));
+        when(cityValidationService.isValidCity("Blumenau")).thenReturn(true);
+
+        EntrepreneurRequest updateRequest = EntrepreneurRequest.builder()
+                .enterpriseName("New Company")
+                .entrepreneurName("New Name")
+                .city("Blumenau")
+                .operatingSegment(OperatingSegment.COMMERCE)
+                .contact("new@example.com")
+                .status(Status.ACTIVE)
+                .build();
+
+        Entrepreneur updatedEntrepreneur = Entrepreneur.builder()
+                .id(id)
+                .enterpriseName("New Company")
+                .entrepreneurName("New Name")
+                .city("Blumenau")
+                .operatingSegment(OperatingSegment.COMMERCE)
+                .contact("new@example.com")
+                .status(Status.ACTIVE)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        when(entrepreneurRepository.save(any(Entrepreneur.class))).thenReturn(updatedEntrepreneur);
+
+        EntrepreneurResponse response = entrepreneurService.update(id, updateRequest);
+
+        assertNotNull(response);
+        assertEquals(id, response.getId());
+        assertEquals("New Company", response.getEnterpriseName());
+        assertEquals("New Name", response.getEntrepreneurName());
+        assertEquals("Blumenau", response.getCity());
+        assertEquals(OperatingSegment.COMMERCE, response.getOperatingSegment());
+        assertEquals("new@example.com", response.getContact());
+
+        verify(entrepreneurRepository, times(1)).save(any(Entrepreneur.class));
+    }
+
+    @Test
+    void update_WithInvalidCity_ShouldThrowValidationException() {
+        Long id = 1L;
+        Entrepreneur existingEntrepreneur = Entrepreneur.builder()
+                .id(id)
+                .enterpriseName("Old Company")
+                .entrepreneurName("Old Name")
+                .city("Florianopolis")
+                .operatingSegment(OperatingSegment.TECHNOLOGY)
+                .contact("old@example.com")
+                .status(Status.ACTIVE)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        when(entrepreneurRepository.findById(id)).thenReturn(Optional.of(existingEntrepreneur));
+        when(cityValidationService.isValidCity("InvalidCity")).thenReturn(false);
+
+        EntrepreneurRequest updateRequest = EntrepreneurRequest.builder()
+                .enterpriseName("New Company")
+                .entrepreneurName("New Name")
+                .city("InvalidCity")
+                .operatingSegment(OperatingSegment.COMMERCE)
+                .contact("new@example.com")
+                .status(Status.ACTIVE)
+                .build();
+
+        ValidationException exception = assertThrows(ValidationException.class, () -> {
+            entrepreneurService.update(id, updateRequest);
+        });
+
+        assertEquals("A cidade deve ser um munícipio pertencente á Santa Catarina", exception.getMessage());
+        verify(entrepreneurRepository, never()).save(any(Entrepreneur.class));
+    }
+
+    @Test
+    void update_WhenNotExists_ShouldThrowValidationException() {
+        Long id = 999L;
+        when(entrepreneurRepository.findById(id)).thenReturn(Optional.empty());
+
+        EntrepreneurRequest updateRequest = EntrepreneurRequest.builder()
+                .enterpriseName("New Company")
+                .entrepreneurName("New Name")
+                .city("Florianopolis")
+                .operatingSegment(OperatingSegment.COMMERCE)
+                .contact("new@example.com")
+                .status(Status.ACTIVE)
+                .build();
+
+        ValidationException exception = assertThrows(ValidationException.class, () -> {
+            entrepreneurService.update(id, updateRequest);
+        });
+
+        assertEquals("Empreendedor não encontrado", exception.getMessage());
+        verify(entrepreneurRepository, never()).save(any(Entrepreneur.class));
+    }
+
+    @Test
+    void update_WithStatusChange_ShouldUpdateStatus() {
+        Long id = 1L;
+        Entrepreneur existingEntrepreneur = Entrepreneur.builder()
+                .id(id)
+                .enterpriseName("Company")
+                .entrepreneurName("Name")
+                .city("Florianopolis")
+                .operatingSegment(OperatingSegment.TECHNOLOGY)
+                .contact("email@example.com")
+                .status(Status.ACTIVE)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        when(entrepreneurRepository.findById(id)).thenReturn(Optional.of(existingEntrepreneur));
+        when(cityValidationService.isValidCity("Florianopolis")).thenReturn(true);
+
+        EntrepreneurRequest updateRequest = EntrepreneurRequest.builder()
+                .enterpriseName("Company")
+                .entrepreneurName("Name")
+                .city("Florianopolis")
+                .operatingSegment(OperatingSegment.TECHNOLOGY)
+                .contact("email@example.com")
+                .status(Status.INACTIVE)
+                .build();
+
+        Entrepreneur updatedEntrepreneur = Entrepreneur.builder()
+                .id(id)
+                .enterpriseName("Company")
+                .entrepreneurName("Name")
+                .city("Florianopolis")
+                .operatingSegment(OperatingSegment.TECHNOLOGY)
+                .contact("email@example.com")
+                .status(Status.INACTIVE)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        when(entrepreneurRepository.save(any(Entrepreneur.class))).thenReturn(updatedEntrepreneur);
+
+        EntrepreneurResponse response = entrepreneurService.update(id, updateRequest);
+
+        assertNotNull(response);
+        assertEquals(Status.INACTIVE, response.getStatus());
+    }
+
+    @Test
+    void update_WithoutStatus_ShouldKeepExistingStatus() {
+        Long id = 1L;
+        Entrepreneur existingEntrepreneur = Entrepreneur.builder()
+                .id(id)
+                .enterpriseName("Company")
+                .entrepreneurName("Name")
+                .city("Florianopolis")
+                .operatingSegment(OperatingSegment.TECHNOLOGY)
+                .contact("email@example.com")
+                .status(Status.ACTIVE)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        when(entrepreneurRepository.findById(id)).thenReturn(Optional.of(existingEntrepreneur));
+        when(cityValidationService.isValidCity("Florianopolis")).thenReturn(true);
+
+        EntrepreneurRequest updateRequest = EntrepreneurRequest.builder()
+                .enterpriseName("Updated Company")
+                .entrepreneurName("Updated Name")
+                .city("Florianopolis")
+                .operatingSegment(OperatingSegment.COMMERCE)
+                .contact("updated@example.com")
+                .build();
+
+        Entrepreneur updatedEntrepreneur = Entrepreneur.builder()
+                .id(id)
+                .enterpriseName("Updated Company")
+                .entrepreneurName("Updated Name")
+                .city("Florianopolis")
+                .operatingSegment(OperatingSegment.COMMERCE)
+                .contact("updated@example.com")
+                .status(Status.ACTIVE)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        when(entrepreneurRepository.save(any(Entrepreneur.class))).thenReturn(updatedEntrepreneur);
+
+        EntrepreneurResponse response = entrepreneurService.update(id, updateRequest);
+
+        assertNotNull(response);
+        assertEquals(Status.ACTIVE, response.getStatus());
+    }
 }
