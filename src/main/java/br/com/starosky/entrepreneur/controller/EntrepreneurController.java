@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -60,5 +61,20 @@ public class EntrepreneurController {
             @PageableDefault(size = 10, sort = "id") Pageable pageable) {
         Page<EntrepreneurResponse> page = entrepreneurService.findAll(pageable);
         return ResponseEntity.ok(page);
+    }
+
+    /**
+     * Atualiza um empreendedor existente.
+     *
+     * @param id ID do empreendedor
+     * @param request Dados do empreendedor
+     * @return Dados do empreendedor atualizado
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<EntrepreneurResponse> update(
+            @PathVariable Long id,
+            @Valid @RequestBody EntrepreneurRequest request) {
+        EntrepreneurResponse response = entrepreneurService.update(id, request);
+        return ResponseEntity.ok(response);
     }
 }

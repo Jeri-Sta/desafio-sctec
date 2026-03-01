@@ -79,4 +79,32 @@ public class EntrepreneurService {
             throw new ValidationException("A cidade deve ser um munícipio pertencente á Santa Catarina");
         }
     }
+
+    /**
+     * Atualiza um empreendedor existente.
+     *
+     * @param id ID do empreendedor a ser atualizado
+     * @param request novos dados do empreendedor
+     * @return dados do empreendedor atualizado
+     * @throws ValidationException se o empreendedor não for encontrado
+     */
+    @Transactional
+    public EntrepreneurResponse update(Long id, EntrepreneurRequest request) {
+        Entrepreneur entrepreneur = entrepreneurRepository.findById(id)
+                .orElseThrow(() -> new ValidationException("Empreendedor não encontrado"));
+
+        validateRequest(request);
+
+        entrepreneur.setEnterpriseName(request.getEnterpriseName());
+        entrepreneur.setEntrepreneurName(request.getEntrepreneurName());
+        entrepreneur.setCity(request.getCity());
+        entrepreneur.setOperatingSegment(request.getOperatingSegment());
+        entrepreneur.setContact(request.getContact());
+        if (request.getStatus() != null) {
+            entrepreneur.setStatus(request.getStatus());
+        }
+
+        Entrepreneur updated = entrepreneurRepository.save(entrepreneur);
+        return EntrepreneurResponse.fromEntity(updated);
+    }
 }
