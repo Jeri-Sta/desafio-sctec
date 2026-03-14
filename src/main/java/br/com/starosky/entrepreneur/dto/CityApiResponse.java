@@ -10,40 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CityApiResponse {
 
+    @JsonProperty("codigo_ibge")
     private Long ibgeCode;
+    
+    @JsonProperty("nome")
     private String name;
-
-    @JsonProperty("microrregiao")
-    private MicroRegion microRegion;
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class MicroRegion {
-        private Long id;
-        private String name;
-
-        @JsonProperty("mesorregiao")
-        private MesoRegion mesoRegion;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class MesoRegion {
-        private Long id;
-        private String name;
-
-        @JsonProperty("UF")
-        private State state;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class State {
-        private Long id;
-        private String name;
-        private String abbreviation;
-    }
 }

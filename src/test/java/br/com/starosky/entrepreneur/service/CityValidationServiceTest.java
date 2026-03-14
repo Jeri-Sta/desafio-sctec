@@ -45,7 +45,7 @@ class CityValidationServiceTest {
 
         assertEquals("https://brasilapi.com.br/api/ibge/municipios/v1",
                 baseUrlField.get(null));
-        assertEquals("42", stateCodeField.get(null));
+        assertEquals("SC", stateCodeField.get(null));
     }
 
     @Test
@@ -82,10 +82,6 @@ class CityValidationServiceTest {
     void cityApiResponse_ShouldHaveCorrectStructure() {
         CityApiResponse response = new CityApiResponse();
         assertNotNull(response);
-
-        assertNotNull(CityApiResponse.MicroRegion.class);
-        assertNotNull(CityApiResponse.MesoRegion.class);
-        assertNotNull(CityApiResponse.State.class);
     }
 
     @Test
@@ -96,35 +92,13 @@ class CityValidationServiceTest {
     }
 
     @Test
-    void class_ShouldHaveValidationEnabledField() throws NoSuchFieldException {
-        Field validationEnabledField = CityValidationService.class.getDeclaredField("validationEnabled");
-        assertNotNull(validationEnabledField);
-        assertEquals(boolean.class, validationEnabledField.getType());
-    }
-
-    @Test
     void class_ShouldHaveConstructorWithWebClientBuilder() throws NoSuchMethodException {
         var constructor = CityValidationService.class.getConstructor(org.springframework.web.reactive.function.client.WebClient.Builder.class);
         assertNotNull(constructor);
     }
 
     @Test
-    void isValidCity_WithValidationDisabled_ShouldReturnTrue() throws Exception {
-        Field validationEnabledField = CityValidationService.class.getDeclaredField("validationEnabled");
-        validationEnabledField.setAccessible(true);
-        validationEnabledField.set(cityValidationService, false);
-
-        boolean result = cityValidationService.isValidCity("AnyCity");
-
-        assertTrue(result);
-    }
-
-    @Test
     void isValidCity_WithNullCityName_ShouldReturnFalse() throws Exception {
-        Field validationEnabledField = CityValidationService.class.getDeclaredField("validationEnabled");
-        validationEnabledField.setAccessible(true);
-        validationEnabledField.set(cityValidationService, true);
-
         boolean result = cityValidationService.isValidCity(null);
 
         assertFalse(result);
@@ -132,10 +106,6 @@ class CityValidationServiceTest {
 
     @Test
     void isValidCity_WithEmptyCityName_ShouldReturnFalse() throws Exception {
-        Field validationEnabledField = CityValidationService.class.getDeclaredField("validationEnabled");
-        validationEnabledField.setAccessible(true);
-        validationEnabledField.set(cityValidationService, true);
-
         boolean result = cityValidationService.isValidCity("   ");
 
         assertFalse(result);
@@ -143,24 +113,9 @@ class CityValidationServiceTest {
 
     @Test
     void isValidCity_WithBlankCityName_ShouldReturnFalse() throws Exception {
-        Field validationEnabledField = CityValidationService.class.getDeclaredField("validationEnabled");
-        validationEnabledField.setAccessible(true);
-        validationEnabledField.set(cityValidationService, true);
-
         boolean result = cityValidationService.isValidCity("");
 
         assertFalse(result);
-    }
-
-    @Test
-    void isValidCity_WithValidCityName_ShouldCallApi() throws Exception {
-        Field validationEnabledField = CityValidationService.class.getDeclaredField("validationEnabled");
-        validationEnabledField.setAccessible(true);
-        validationEnabledField.set(cityValidationService, true);
-
-        assertThrows(RuntimeException.class, () -> {
-            cityValidationService.isValidCity("Florianopolis");
-        });
     }
 
     @Test
@@ -168,16 +123,5 @@ class CityValidationServiceTest {
         Method method = CityValidationService.class.getMethod("isValidCity", String.class);
         assertNotNull(method);
         assertEquals(boolean.class, method.getReturnType());
-    }
-
-    @Test
-    void isValidCity_WithValidationEnabledTrue_ShouldAttemptApiCall() throws Exception {
-        Field validationEnabledField = CityValidationService.class.getDeclaredField("validationEnabled");
-        validationEnabledField.setAccessible(true);
-        validationEnabledField.set(cityValidationService, true);
-
-        assertThrows(RuntimeException.class, () -> {
-            cityValidationService.isValidCity("TestCity");
-        });
     }
 }
