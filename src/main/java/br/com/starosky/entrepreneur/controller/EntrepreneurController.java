@@ -46,9 +46,7 @@ public class EntrepreneurController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<EntrepreneurResponse> findById(@PathVariable Long id) {
-        return entrepreneurService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(entrepreneurService.findById(id));
     }
 
     /**

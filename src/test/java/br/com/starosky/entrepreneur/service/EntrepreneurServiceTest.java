@@ -24,10 +24,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -216,38 +214,39 @@ class EntrepreneurServiceTest {
     }
 
     @Test
-    void findById_WhenExists_ShouldReturnEntrepreneur() {
-        Long id = 1L;
-        Entrepreneur entrepreneur = Entrepreneur.builder()
-                .id(id)
-                .enterpriseName("Tech Solutions")
-                .entrepreneurName("John Doe")
-                .city("Florianopolis")
-                .operatingSegment(OperatingSegment.TECHNOLOGY)
-                .contact("john@example.com")
-                .status(Status.ACTIVE)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+        void findById_WhenExists_ShouldReturnEntrepreneur() {
+                Long id = 1L;
+                Entrepreneur entrepreneur = Entrepreneur.builder()
+                                .id(id)
+                                .enterpriseName("Tech Solutions")
+                                .entrepreneurName("John Doe")
+                                .city("Florianopolis")
+                                .operatingSegment(OperatingSegment.TECHNOLOGY)
+                                .contact("john@example.com")
+                                .status(Status.ACTIVE)
+                                .createdAt(LocalDateTime.now())
+                                .updatedAt(LocalDateTime.now())
+                                .build();
 
-        when(entrepreneurRepository.findById(id)).thenReturn(Optional.of(entrepreneur));
+                when(entrepreneurRepository.findById(id)).thenReturn(Optional.of(entrepreneur));
 
-        Optional<EntrepreneurResponse> result = entrepreneurService.findById(id);
+                EntrepreneurResponse result = entrepreneurService.findById(id);
 
-        assertTrue(result.isPresent());
-        assertEquals(id, result.get().getId());
-        assertEquals("Tech Solutions", result.get().getEnterpriseName());
-    }
+                assertNotNull(result);
+                assertEquals(id, result.getId());
+                assertEquals("Tech Solutions", result.getEnterpriseName());
+        }
 
     @Test
-    void findById_WhenNotExists_ShouldReturnEmpty() {
-        Long id = 999L;
-        when(entrepreneurRepository.findById(id)).thenReturn(Optional.empty());
+        void findById_WhenNotExists_ShouldThrowValidationException() {
+                Long id = 999L;
+                when(entrepreneurRepository.findById(id)).thenReturn(Optional.empty());
 
-        Optional<EntrepreneurResponse> result = entrepreneurService.findById(id);
-
-        assertFalse(result.isPresent());
-    }
+                ValidationException exception = assertThrows(ValidationException.class, () -> {
+                        entrepreneurService.findById(id);
+                });
+                assertEquals("Empreendedor não encontrado", exception.getMessage());
+        }
 
     @Test
     void findAll_ShouldReturnPageOfEntrepreneurs() {
