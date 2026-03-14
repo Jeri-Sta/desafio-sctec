@@ -50,7 +50,7 @@ public class EntrepreneurService {
      */
     @Transactional(readOnly = true)
     public EntrepreneurResponse findById(Long id) {
-        Entrepreneur entrepreneur = entrepreneurRepository.findById(id)
+        Entrepreneur entrepreneur = entrepreneurRepository.findByIdAndStatus(id, Status.ACTIVE)
                 .orElseThrow(() -> new ValidationException("Empreendedor não encontrado"));
         return EntrepreneurResponse.fromEntity(entrepreneur);
     }
@@ -63,7 +63,7 @@ public class EntrepreneurService {
      */
     @Transactional(readOnly = true)
     public Page<EntrepreneurResponse> findAll(Pageable pageable) {
-        return entrepreneurRepository.findAll(pageable)
+        return entrepreneurRepository.findByStatus(Status.ACTIVE, pageable)
                 .map(EntrepreneurResponse::fromEntity);
     }
 
@@ -89,7 +89,7 @@ public class EntrepreneurService {
      */
     @Transactional
     public EntrepreneurResponse update(Long id, EntrepreneurRequest request) {
-        Entrepreneur entrepreneur = entrepreneurRepository.findById(id)
+        Entrepreneur entrepreneur = entrepreneurRepository.findByIdAndStatus(id, Status.ACTIVE)
                 .orElseThrow(() -> new ValidationException("Empreendedor não encontrado"));
 
         validateRequest(request);
@@ -116,7 +116,7 @@ public class EntrepreneurService {
      */
     @Transactional
     public void delete(Long id) {
-        Entrepreneur entrepreneur = entrepreneurRepository.findById(id)
+        Entrepreneur entrepreneur = entrepreneurRepository.findByIdAndStatus(id, Status.ACTIVE)
                 .orElseThrow(() -> new ValidationException("Empreendedor não encontrado"));
 
         entrepreneur.setStatus(Status.INACTIVE);
