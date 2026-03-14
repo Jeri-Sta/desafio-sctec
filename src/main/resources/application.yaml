@@ -16,7 +16,3 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
-
-app:
-  city-validation:
-    enabled: true
