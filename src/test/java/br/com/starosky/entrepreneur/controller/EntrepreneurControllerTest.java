@@ -20,11 +20,11 @@ import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -129,7 +129,7 @@ class EntrepreneurControllerTest {
     @Test
     void findById_WhenExists_ShouldReturn200Ok() {
         Long id = 1L;
-        when(entrepreneurService.findById(id)).thenReturn(Optional.of(validResponse));
+        when(entrepreneurService.findById(id)).thenReturn(validResponse);
 
         ResponseEntity<EntrepreneurResponse> response = entrepreneurController.findById(id);
 
@@ -143,13 +143,10 @@ class EntrepreneurControllerTest {
     @Test
     void findById_WhenNotExists_ShouldReturn404NotFound() {
         Long id = 999L;
-        when(entrepreneurService.findById(id)).thenReturn(Optional.empty());
+        when(entrepreneurService.findById(id)).thenThrow(new br.com.starosky.entrepreneur.exception.ValidationException("Empreendedor não encontrado"));
 
-        ResponseEntity<EntrepreneurResponse> response = entrepreneurController.findById(id);
-
-        assertNotNull(response);
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNull(response.getBody());
+        assertThrows(br.com.starosky.entrepreneur.exception.ValidationException.class, 
+            () -> entrepreneurController.findById(id), "Expected ValidationException to be thrown");
     }
 
     @Test

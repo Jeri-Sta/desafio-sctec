@@ -51,9 +51,10 @@ public class EntrepreneurService {
      * @return dados do empreendedor encontrado
      */
     @Transactional(readOnly = true)
-    public Optional<EntrepreneurResponse> findById(Long id) {
-        return entrepreneurRepository.findById(id)
-                .map(EntrepreneurResponse::fromEntity);
+    public EntrepreneurResponse findById(Long id) {
+        Entrepreneur entrepreneur = entrepreneurRepository.findById(id)
+                .orElseThrow(() -> new ValidationException("Empreendedor não encontrado"));
+        return EntrepreneurResponse.fromEntity(entrepreneur);
     }
 
     /**
